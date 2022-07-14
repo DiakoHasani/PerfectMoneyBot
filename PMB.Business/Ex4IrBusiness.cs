@@ -86,6 +86,7 @@ namespace PMB.Business
                     }
                     else
                     {
+
                         _errorBusiness.AddError(await response.Content.ReadAsStringAsync(), MethodBase.GetCurrentMethod().DeclaringType.FullName, MethodBase.GetCurrentMethod().Name);
                         return new ResultApiModel<Ex4ApiModel>
                         {
