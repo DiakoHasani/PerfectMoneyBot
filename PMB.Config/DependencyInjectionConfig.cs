@@ -30,6 +30,8 @@ namespace PMB.Config
             services.AddScoped<IErrorBusiness, ErrorBusiness>();
             services.AddScoped<IHdPayBusiness, HdPayBusiness>();
             services.AddScoped<IPayfa24Business, Payfa24Business>();
+            services.AddScoped<IAvvalMoneyBusiness, AvvalMoneyBusiness>();
+            services.AddScoped<IIraniCardBusiness, IraniCardBusiness>();
         }
     }
 }
