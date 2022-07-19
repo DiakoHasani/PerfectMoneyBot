@@ -14,7 +14,7 @@ namespace PMB.Bot
         {
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, config) => { })
-                .ConfigureServices(async services =>
+                .ConfigureServices(services =>
               {
                   services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
                   new DependencyInjectionConfig().Set(services);

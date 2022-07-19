@@ -33,13 +33,13 @@ namespace PMB.Business
                     }
                     else
                     {
-                        _errorBusiness.AddError(await response.Content.ReadAsStringAsync(), MethodBase.GetCurrentMethod().DeclaringType.FullName, MethodBase.GetCurrentMethod().Name);
+                        _errorBusiness.AddError(await response.Content.ReadAsStringAsync(), MethodBase.GetCurrentMethod().DeclaringType.FullName);
                         return null;
                     }
                 }
                 catch (Exception ex)
                 {
-                    _errorBusiness.AddError(ex, MethodBase.GetCurrentMethod().DeclaringType.FullName, "Main try catch in " + MethodBase.GetCurrentMethod().Name);
+                    _errorBusiness.AddError(ex, MethodBase.GetCurrentMethod().DeclaringType.FullName);
                     return null;
                 }
             }
@@ -85,13 +85,13 @@ namespace PMB.Business
                     }
                     else
                     {
-                        _errorBusiness.AddError(await response.Content.ReadAsStringAsync(), MethodBase.GetCurrentMethod().DeclaringType.FullName, MethodBase.GetCurrentMethod().Name);
+                        _errorBusiness.AddError(await response.Content.ReadAsStringAsync(), MethodBase.GetCurrentMethod().DeclaringType.FullName);
                         return null;
                     }
                 }
                 catch (Exception ex)
                 {
-                    _errorBusiness.AddError(ex, MethodBase.GetCurrentMethod().DeclaringType.FullName, "Main try catch in " + MethodBase.GetCurrentMethod().Name);
+                    _errorBusiness.AddError(ex, MethodBase.GetCurrentMethod().DeclaringType.FullName);
                     return null;
                 }
             }

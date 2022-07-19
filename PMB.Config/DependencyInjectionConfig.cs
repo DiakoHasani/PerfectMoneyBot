@@ -29,6 +29,7 @@ namespace PMB.Config
             services.AddScoped<IPriceHistoryBusiness, PriceHistoryBusiness>();
             services.AddScoped<IErrorBusiness, ErrorBusiness>();
             services.AddScoped<IHdPayBusiness, HdPayBusiness>();
+            services.AddScoped<IPayfa24Business, Payfa24Business>();
         }
     }
 }

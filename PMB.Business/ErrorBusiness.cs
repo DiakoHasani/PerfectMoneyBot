@@ -13,7 +13,7 @@ namespace PMB.Business
             _errorRepository = errorRepository;
         }
 
-        public bool AddError(Exception ex, string fileName, string methodName)
+        public bool AddError(Exception ex, string fileName)
         {
             _errorRepository.Add(new Repository.Domain.TblError
             {
@@ -22,13 +22,13 @@ namespace PMB.Business
                 InnerException = ex.InnerException != null ? ex.InnerException.Message ?? "" : "",
                 Line = 0,
                 Message = ex.Message ?? "",
-                MethodName = methodName,
+                MethodName = "",
                 StackTrace = ex.StackTrace ?? ""
             });
             return _errorRepository.SaveChange() > 0;
         }
 
-        public bool AddError(string message, string fileName, string methodName)
+        public bool AddError(string message, string fileName)
         {
             _errorRepository.Add(new Repository.Domain.TblError
             {
@@ -37,7 +37,7 @@ namespace PMB.Business
                 InnerException="",
                 Line=0,
                 Message=message,
-                MethodName = methodName,
+                MethodName = "",
                 StackTrace="",
             });
             return _errorRepository.SaveChange() > 0;
@@ -45,7 +45,7 @@ namespace PMB.Business
     }
     public interface IErrorBusiness
     {
-        bool AddError(Exception ex, string fileName, string methodName);
-        bool AddError(string message, string fileName, string methodName);
+        bool AddError(Exception ex, string fileName);
+        bool AddError(string message, string fileName);
     }
 }
