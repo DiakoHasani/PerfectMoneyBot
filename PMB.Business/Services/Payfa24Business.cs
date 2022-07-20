@@ -2,13 +2,14 @@
 using PMB.Model.General;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PMB.Business
+namespace PMB.Services.Business
 {
     public class Payfa24Business : IPayfa24Business
     {
@@ -98,6 +99,8 @@ namespace PMB.Business
                 };
             }
         }
+
+
     }
     public interface IPayfa24Business
     {

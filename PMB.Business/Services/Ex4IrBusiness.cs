@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PMB.Business
+namespace PMB.Services.Business
 {
     public class Ex4IrBusiness : IEx4IrBusiness
     {

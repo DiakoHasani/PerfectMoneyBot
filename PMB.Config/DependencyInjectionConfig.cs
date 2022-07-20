@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using PMB.Business;
+using PMB.Services.Business;
 using PMB.Repository.Domain;
 using PMB.Repository.Services;
 using System;
@@ -32,6 +32,7 @@ namespace PMB.Config
             services.AddScoped<IPayfa24Business, Payfa24Business>();
             services.AddScoped<IAvvalMoneyBusiness, AvvalMoneyBusiness>();
             services.AddScoped<IIraniCardBusiness, IraniCardBusiness>();
+            services.AddScoped<INobitexBusiness, NobitexBusiness>();
         }
     }
 }

@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
-using PMB.Business;
+using PMB.Services.Business;
 using PMB.Model.DTO.AvvalMoney;
 using PMB.Model.DTO.Ex4;
 using PMB.Model.DTO.HdPay;
 using PMB.Model.DTO.IraniCard;
+using PMB.Model.DTO.Nobitex;
 using PMB.Model.DTO.Payfa24;
 using PMB.Model.General;
 using System;
@@ -12,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace PMB.Bot.Schedules
 {
@@ -23,6 +25,8 @@ namespace PMB.Bot.Schedules
         private readonly IPayfa24Business _payfa24Business;
         private readonly IAvvalMoneyBusiness _avvalMoneyBusiness;
         private readonly IIraniCardBusiness _iraniCardBusiness;
+        private readonly INobitexBusiness _nobitexBusiness;
+        private readonly IErrorBusiness _errorBusiness;
         IConfigurationBuilder builder;
         IConfigurationRoot config;
 
@@ -31,7 +35,9 @@ namespace PMB.Bot.Schedules
             IHdPayBusiness hdPayBusiness,
             IPayfa24Business payfa24Business,
             IAvvalMoneyBusiness avvalMoneyBusiness,
-            IIraniCardBusiness iraniCardBusiness)
+            IIraniCardBusiness iraniCardBusiness,
+            INobitexBusiness nobitexBusiness,
+            IErrorBusiness errorBusiness)
         {
             _ex4IrBusiness = ex4IrBusiness;
             _priceHistoryBusiness = priceHistoryBusiness;
@@ -39,35 +45,56 @@ namespace PMB.Bot.Schedules
             _payfa24Business = payfa24Business;
             _avvalMoneyBusiness = avvalMoneyBusiness;
             _iraniCardBusiness = iraniCardBusiness;
+            _nobitexBusiness = nobitexBusiness;
+            _errorBusiness = errorBusiness;
             builder = new ConfigurationBuilder().AddJsonFile($"appsettings.json", true, true);
             config = builder.Build();
         }
 
         private bool pause = false;
+        private MessageModel resultAddPriceToDatabase;
+
         private ResultApiModel<Ex4ApiModel> resultApiEx4;
         private ResultApiModel<HdPayApiModel> resultApiHdPay;
         private ResultApiModel<Payfa24ResultItemModel> resultApiPayfa;
         private ResultApiModel<AvvalMoneyApiModel> resultApiAvvalMoney;
         private ResultApiModel<IraniCardPriceModel> resultIraniCard;
+        private ResultApiModel<NobitexPriceModel> resultNobitex;
 
         private Ex4ApiModel ex4ApiData;
         private HdPayApiModel hdPayData;
         private Payfa24ResultItemModel payfa24Data;
         private AvvalMoneyApiModel avvalMoneyData;
         private IraniCardPriceModel iraniCardData;
+        private NobitexPriceModel nobitexData;
 
-        public void Start()
+        public async Task Start()
         {
-            new Timer(TimerCallback, null, 0, 60000);
-        }
-
-        public void TimerCallback(Object o)
-        {
-            if (pause)
+            while (true)
             {
-                return;
+                if (!pause)
+                {
+                    try
+                    {
+                        pause = true;
+                        await CallApis();
+                        await AddPriceToDataBase();
+                        Thread.Sleep(60000);
+                    }
+                    catch (Exception ex)
+                    {
+                        _errorBusiness.AddError(ex, MethodBase.GetCurrentMethod().DeclaringType.FullName);
+                        Console.WriteLine("error in main start excption message: " + ex.Message);
+                    }
+                    finally
+                    {
+                        pause = false;
+                        Console.WriteLine();
+                        Console.WriteLine("----------------------------------------------------------");
+                        Console.WriteLine();
+                    }
+                }
             }
-            CallApis().GetAwaiter().GetResult();
         }
 
         public async Task CallApis()
@@ -77,6 +104,7 @@ namespace PMB.Bot.Schedules
             payfa24Data = await CallPayfa24Api();
             avvalMoneyData = await CallAvvalMoneyApi();
             iraniCardData = await CallIraniCardApi();
+            nobitexData = await CallNobitex();
         }
 
         public async Task<Ex4ApiModel> CallEx4Api()
@@ -142,16 +170,48 @@ namespace PMB.Bot.Schedules
             }
             return null;
         }
+
+        public async Task<NobitexPriceModel> CallNobitex()
+        {
+            resultNobitex = await _nobitexBusiness.GetPrice();
+            Console.WriteLine(resultNobitex.Message);
+            if (resultNobitex.Result)
+            {
+                return resultNobitex.Data;
+            }
+            return null;
+        }
+
+        public async Task AddPriceToDataBase()
+        {
+            resultAddPriceToDatabase = await _priceHistoryBusiness.Add(new Model.DTO.PriceHistory.AddPriceHistoryModel
+            {
+                AvvalMoneyBuyPrice = avvalMoneyData != null ? avvalMoneyData.Data.FirstOrDefault(a => a.Type == "Buy").Rials : 0,
+                AvvalMoneySellPrice = avvalMoneyData != null ? avvalMoneyData.Data.FirstOrDefault(a => a.Type == "Sell").Rials : 0,
+                Ex4IrBuyPrice = ex4ApiData != null ? Convert.ToDouble(ex4ApiData.Buy_Price, System.Globalization.CultureInfo.InvariantCulture) : 0,
+                Ex4IrSellPrice = ex4ApiData != null ? Convert.ToDouble(ex4ApiData.Sell_Price, System.Globalization.CultureInfo.InvariantCulture) : 0,
+                HdPayBuyPrice = hdPayData != null ? hdPayData.BuyPrice : 0,
+                HdPaySellPrice = hdPayData != null ? hdPayData.SellPrice : 0,
+                IraniCardBuyPrice = iraniCardData != null ? iraniCardData.BuyPrice : 0,
+                IraniCardSellPrice = iraniCardData != null ? iraniCardData.SellPrice : 0,
+                NobitexBuyPrice = nobitexData != null ? nobitexData.Price : 0,
+                NobitexSellPrice = nobitexData != null ? nobitexData.Price : 0,
+                Payfa24BuyPrice = payfa24Data != null ? Convert.ToDouble(payfa24Data.Fee_Buy, System.Globalization.CultureInfo.InvariantCulture) : 0,
+                Payfa24SellPrice = payfa24Data != null ? Convert.ToDouble(payfa24Data.Fee_Sell, System.Globalization.CultureInfo.InvariantCulture) : 0
+            });
+            Console.WriteLine(resultAddPriceToDatabase.Message);
+        }
     }
     public interface IGetPriceSchedule
     {
-        void Start();
-        void TimerCallback(Object o);
+        Task Start();
         Task CallApis();
+        Task AddPriceToDataBase();
         Task<Ex4ApiModel> CallEx4Api();
         Task<HdPayApiModel> CallHdPayApi();
         Task<Payfa24ResultItemModel> CallPayfa24Api();
         Task<AvvalMoneyApiModel> CallAvvalMoneyApi();
         Task<IraniCardPriceModel> CallIraniCardApi();
+        Task<NobitexPriceModel> CallNobitex();
     }
 }

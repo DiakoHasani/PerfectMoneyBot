@@ -17,13 +17,16 @@ namespace PMB.Bot
                 .ConfigureServices(services =>
               {
                   services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
+                  
                   new DependencyInjectionConfig().Set(services);
+                  new AutoMapperConfig().Config(services);
+
                   services.AddScoped<IGetPriceSchedule, GetPriceSchedule>();
 
                   var serviceProvider = services.BuildServiceProvider();
                   var getPriceService = serviceProvider.GetRequiredService<IGetPriceSchedule>();
-                  getPriceService.Start();
 
+                  getPriceService.Start().GetAwaiter().GetResult();
               });
 
             var buildHost = host.Build();

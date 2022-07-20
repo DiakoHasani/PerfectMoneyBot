@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PMB.Business
+namespace PMB.Services.Business
 {
     public class ErrorBusiness : IErrorBusiness
     {
