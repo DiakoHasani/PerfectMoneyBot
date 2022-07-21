@@ -13,6 +13,9 @@ namespace PMB.Business.AutoMapper
         {
             CreateMap<AddPriceHistoryModel, TblPriceHistory>();
             CreateMap<TblPriceHistory, AddPriceHistoryModel>();
+
+            CreateMap<PriceHistoryModel, TblPriceHistory>();
+            CreateMap<TblPriceHistory, PriceHistoryModel>();
         }
     }
 }

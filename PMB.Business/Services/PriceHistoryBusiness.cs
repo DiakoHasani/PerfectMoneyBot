@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace PMB.Services.Business
 {
@@ -41,9 +42,15 @@ namespace PMB.Services.Business
                 };
             }
         }
+
+        public PriceHistoryModel GetLastPrice()
+        {
+            return _mapper.Map<PriceHistoryModel>(_priceHistoryRepository.GetAll().OrderByDescending(a => a.Id).FirstOrDefault());
+        }
     }
     public interface IPriceHistoryBusiness
     {
         Task<MessageModel> Add(AddPriceHistoryModel model);
+        PriceHistoryModel GetLastPrice();
     }
 }
