@@ -79,7 +79,9 @@ namespace PMB.Bot.Schedules
                         pause = true;
                         await CallApis();
                         await AddPriceToDataBase();
-                        Thread.Sleep(60000);
+                        ShowPrices();
+                        ClearData();
+                        Thread.Sleep(600000);
                     }
                     catch (Exception ex)
                     {
@@ -110,10 +112,14 @@ namespace PMB.Bot.Schedules
         public async Task<Ex4ApiModel> CallEx4Api()
         {
             resultApiEx4 = await _ex4IrBusiness.GetPrice();
-            Console.WriteLine(resultApiEx4.Message);
             if (resultApiEx4.Result)
             {
+                Console.WriteLine(resultApiEx4.Message);
                 return resultApiEx4.Data;
+            }
+            else
+            {
+                Console.WriteLine(resultApiEx4.Message);
             }
             return null;
         }
@@ -201,6 +207,57 @@ namespace PMB.Bot.Schedules
             });
             Console.WriteLine(resultAddPriceToDatabase.Message);
         }
+
+        public void ShowPrices()
+        {
+            try
+            {
+                if (ex4ApiData != null)
+                {
+                    Console.WriteLine($"Ex4         BuyPrice: {Convert.ToDouble(ex4ApiData.Buy_Price).ToString("N0")} - SellPrice: {Convert.ToDouble(ex4ApiData.Sell_Price).ToString("N0")}");
+                }
+
+                if (hdPayData != null)
+                {
+                    Console.WriteLine($"HdPay       BuyPrice: {hdPayData.BuyPrice.ToString("N0")} - SellPrice: {hdPayData.SellPrice.ToString("N0")}");
+                }
+
+                if (payfa24Data != null)
+                {
+                    Console.WriteLine($"Payfa       BuyPrice: {payfa24Data.Fee_Buy} - SellPrice: {payfa24Data.Fee_Sell}");
+                }
+
+                if (avvalMoneyData != null)
+                {
+                    Console.WriteLine($"AvvalMoney  BuyPrice: {avvalMoneyData.Data.FirstOrDefault(a => a.Type == "Buy").Rials.ToString("N0")} - SellPrice: {avvalMoneyData.Data.FirstOrDefault(a => a.Type == "Sell").Rials.ToString("N0")}");
+                }
+
+                if (iraniCardData != null)
+                {
+                    Console.WriteLine($"IraniCard   BuyPrice: {iraniCardData.BuyPrice.ToString("N0")} - SellPrice: {iraniCardData.SellPrice.ToString("N0")}");
+                }
+
+                if (nobitexData != null)
+                {
+                    Console.WriteLine($"Nobitex     ___Price: {nobitexData.Price.ToString("N0")}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _errorBusiness.AddError(ex, MethodBase.GetCurrentMethod().DeclaringType.FullName);
+                Console.WriteLine("error in ShowPrices exception message: " + ex.Message);
+            }
+        }
+
+        public void ClearData()
+        {
+            ex4ApiData = null;
+            hdPayData = null;
+            payfa24Data = null;
+            avvalMoneyData = null;
+            iraniCardData = null;
+            nobitexData = null;
+        }
     }
     public interface IGetPriceSchedule
     {
@@ -213,5 +270,7 @@ namespace PMB.Bot.Schedules
         Task<AvvalMoneyApiModel> CallAvvalMoneyApi();
         Task<IraniCardPriceModel> CallIraniCardApi();
         Task<NobitexPriceModel> CallNobitex();
+        void ShowPrices();
+        void ClearData();
     }
 }
